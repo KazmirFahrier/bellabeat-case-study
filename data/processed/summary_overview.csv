@@ -1,0 +1,14 @@
+metric,value
+activity_users,33
+sleep_users,24
+weight_users,8
+date_range_start,2016-04-12
+date_range_end,2016-05-12
+avg_daily_steps,7670.6
+median_daily_steps,7441
+avg_daily_calories,2313.5
+avg_daily_active_minutes,228.5
+avg_daily_sedentary_hours,16.49
+share_days_meeting_10k_steps,0.324
+share_days_with_sleep_logs,0.438
+avg_sleep_hours_logged_days,6.99

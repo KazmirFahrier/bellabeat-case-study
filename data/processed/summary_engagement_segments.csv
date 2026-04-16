@@ -1,0 +1,4 @@
+engagement_segment,users,avg_days_logged,share_of_users
+High (25+ days),29,30.20689655172414,0.8787878787878788
+Low (1-10 days),1,4,0.030303030303030304
+Moderate (11-24 days),3,18.666666666666668,0.09090909090909091
