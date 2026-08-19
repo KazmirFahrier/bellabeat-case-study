@@ -1,0 +1,4 @@
+hypothesis,intervention,primary_metric,guardrail,design
+Routine timed prompts increase meaningful movement,Personalized prompt near each user's historically active midday or evening window,Incremental active minutes per user day,Prompt opt out rate,Randomized user level trial with a neutral notification control
+A combined movement and recovery summary improves weekly engagement,Weekly summary that pairs movement consistency with sleep logging,Four week retained weekly active users,Notification dismissals and sleep tracking opt outs,Randomized user level trial stratified by baseline engagement
+Passive defaults increase sleep coverage without reducing trust,Clear opt in sleep tracking setup with a privacy explanation,Share of eligible nights with a sleep record,Consent abandonment and feature disablement,Staged experiment with privacy review and explicit consent

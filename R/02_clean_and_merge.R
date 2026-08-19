@@ -10,11 +10,13 @@ library(janitor)
 
 raw_dir <- here("data", "raw")
 
-daily_activity <- read_csv(
+daily_raw <- read_csv(
   file.path(raw_dir, "dailyActivity_merged.csv"),
   show_col_types = FALSE
 ) |>
-  clean_names() |>
+  clean_names()
+
+daily_activity <- daily_raw |>
   transmute(
     id = as.character(id),
     activity_date = mdy(activity_date),
@@ -33,11 +35,23 @@ daily_activity <- read_csv(
     calories > 0
   )
 
-sleep_day <- read_csv(
+assert_columns(
+  daily_activity,
+  c(
+    "id", "activity_date", "total_steps", "calories", "sedentary_minutes",
+    "lightly_active_minutes", "fairly_active_minutes", "very_active_minutes"
+  ),
+  "daily activity"
+)
+assert_unique_key(daily_activity, c("id", "activity_date"), "daily activity")
+
+sleep_raw <- read_csv(
   file.path(raw_dir, "sleepDay_merged.csv"),
   show_col_types = FALSE
 ) |>
-  clean_names() |>
+  clean_names()
+
+sleep_day <- sleep_raw |>
   transmute(
     id = as.character(id),
     sleep_datetime = mdy_hms(sleep_day),
@@ -55,6 +69,13 @@ sleep_day <- read_csv(
     total_time_in_bed = mean(total_time_in_bed),
     .groups = "drop"
   )
+
+assert_columns(
+  sleep_day,
+  c("id", "sleep_date", "total_minutes_asleep", "total_time_in_bed"),
+  "sleep day"
+)
+assert_unique_key(sleep_day, c("id", "sleep_date"), "sleep day")
 
 weight_log <- read_csv(
   file.path(raw_dir, "weightLogInfo_merged.csv"),
@@ -76,6 +97,9 @@ weight_log <- read_csv(
     bmi = mean(bmi, na.rm = TRUE),
     .groups = "drop"
   )
+
+assert_columns(weight_log, c("id", "weight_date", "weight_kg", "bmi"), "weight log")
+assert_unique_key(weight_log, c("id", "weight_date"), "weight log")
 
 hourly_steps <- read_csv(
   file.path(raw_dir, "hourlySteps_merged.csv"),
@@ -113,6 +137,10 @@ hourly_calories <- read_csv(
     calories
   ) |>
   distinct()
+
+assert_unique_key(hourly_steps, c("id", "activity_hour"), "hourly steps")
+assert_unique_key(hourly_intensities, c("id", "activity_hour"), "hourly intensities")
+assert_unique_key(hourly_calories, c("id", "activity_hour"), "hourly calories")
 
 activity_users <- n_distinct(daily_activity$id)
 sleep_users <- n_distinct(sleep_day$id)
@@ -181,9 +209,55 @@ hourly_enriched <- hourly_steps |>
     week_part = if_else(day_of_week %in% c("Saturday", "Sunday"), "Weekend", "Weekday")
   )
 
+if (
+  n_distinct(daily_activity$id) != 33 ||
+    min(daily_activity$activity_date) != as.Date("2016-04-12") ||
+    max(daily_activity$activity_date) != as.Date("2016-05-12")
+) {
+  stop("Daily activity does not match the verified source snapshot.", call. = FALSE)
+}
+
+if (nrow(hourly_enriched) != nrow(hourly_steps)) {
+  stop("Hourly joins lost or duplicated rows.", call. = FALSE)
+}
+
+data_quality <- tibble(
+  check = c(
+    "daily_rows",
+    "daily_source_rows",
+    "daily_rows_excluded",
+    "daily_users",
+    "sleep_source_rows",
+    "sleep_user_days",
+    "sleep_rows_consolidated",
+    "sleep_users",
+    "weight_user_days",
+    "weight_users",
+    "hourly_rows",
+    "daily_start",
+    "daily_end"
+  ),
+  value = c(
+    nrow(daily_activity),
+    nrow(daily_raw),
+    nrow(daily_raw) - nrow(daily_activity),
+    activity_users,
+    nrow(sleep_raw),
+    nrow(sleep_day),
+    nrow(sleep_raw) - nrow(sleep_day),
+    sleep_users,
+    nrow(weight_log),
+    weight_users,
+    nrow(hourly_enriched),
+    as.character(min(daily_activity$activity_date)),
+    as.character(max(daily_activity$activity_date))
+  )
+)
+
 saveRDS(daily_enriched, here("data", "processed", "daily_enriched.rds"))
 saveRDS(hourly_enriched, here("data", "processed", "hourly_enriched.rds"))
 write_csv(coverage, here("data", "processed", "summary_dataset_coverage.csv"))
 write_csv(engagement_by_user, here("data", "processed", "user_engagement_days.csv"))
+write_csv(data_quality, here("data", "processed", "summary_data_quality.csv"))
 
 message("Saved cleaned analysis tables and coverage summaries.")

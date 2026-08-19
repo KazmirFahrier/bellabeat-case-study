@@ -1,0 +1,6 @@
+metric,estimate,ci_low,ci_high,participants
+Average daily steps,7555.809997,6412.741672,8717.682574,33
+Average active minutes,226.051488,196.499335,252.82561,33
+Average sedentary hours,16.630915,15.384972,17.86383,33
+Share of days reaching 10k steps,0.311173,0.21106,0.419804,33
+Share of days with sleep logs,0.417913,0.2903,0.563981,33
