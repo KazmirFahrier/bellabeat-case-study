@@ -1,0 +1,14 @@
+check,value
+daily_rows,936
+daily_source_rows,940
+daily_rows_excluded,4
+daily_users,33
+sleep_source_rows,413
+sleep_user_days,410
+sleep_rows_consolidated,3
+sleep_users,24
+weight_user_days,67
+weight_users,8
+hourly_rows,22099
+daily_start,2016-04-12
+daily_end,2016-05-12

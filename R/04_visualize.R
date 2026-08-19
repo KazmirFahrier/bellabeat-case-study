@@ -40,7 +40,7 @@ coverage <- read_csv(here("data", "processed", "summary_dataset_coverage.csv"),
                      show_col_types = FALSE)
 engagement <- read_csv(here("data", "processed", "summary_engagement_segments.csv"),
                        show_col_types = FALSE)
-weekday <- read_csv(here("data", "processed", "summary_weekday_usage.csv"),
+weekday <- read_csv(here("data", "processed", "summary_weekday_participant.csv"),
                     show_col_types = FALSE) |>
   mutate(
     day_of_week = factor(
@@ -48,14 +48,15 @@ weekday <- read_csv(here("data", "processed", "summary_weekday_usage.csv"),
       levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
     )
   )
-hourly <- read_csv(here("data", "processed", "summary_hourly_usage.csv"),
+hourly <- read_csv(here("data", "processed", "summary_hourly_participant.csv"),
                    show_col_types = FALSE)
-sleep_steps <- read_csv(here("data", "processed", "summary_sleep_by_steps.csv"),
-                        show_col_types = FALSE)
+sleep_association <- read_csv(here("data", "processed", "summary_sleep_association.csv"),
+                              show_col_types = FALSE) |>
+  filter(estimand != "Naive day level association")
 activity_mix <- read_csv(here("data", "processed", "summary_activity_mix.csv"),
                          show_col_types = FALSE)
-segment <- read_csv(here("data", "processed", "summary_by_segment.csv"),
-                    show_col_types = FALSE)
+participant_metrics <- read_csv(here("data", "processed", "summary_participant_metrics.csv"),
+                                show_col_types = FALSE)
 
 p1 <- ggplot(coverage, aes(x = reorder(dataset, unique_users), y = unique_users, fill = dataset)) +
   geom_col(width = 0.7, show.legend = FALSE) +
@@ -103,12 +104,13 @@ p2 <- ggplot(engagement, aes(x = engagement_segment, y = users, fill = engagemen
 save_fig(p2, "02_engagement_segments.png")
 
 p3 <- ggplot(weekday, aes(day_of_week, avg_steps, group = 1)) +
+  geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.16, color = pal["mist"]) +
   geom_line(linewidth = 1.2, color = pal["teal"]) +
   geom_point(size = 2.5, color = pal["coral"]) +
   scale_y_continuous(labels = comma) +
   labs(
-    title = "Daily movement follows a repeatable weekly rhythm.",
-    subtitle = "Average daily steps by weekday",
+    title = "Weekly activity differences are visible but uncertain.",
+    subtitle = "Participant weighted means with 95% participant bootstrap intervals",
     x = NULL, y = "Average steps",
     caption = caption_txt
   ) +
@@ -117,13 +119,18 @@ p3 <- ggplot(weekday, aes(day_of_week, avg_steps, group = 1)) +
 save_fig(p3, "03_weekday_steps.png")
 
 p4 <- ggplot(hourly, aes(hour_of_day, avg_steps)) +
+  geom_ribbon(
+    aes(ymin = ci_low, ymax = ci_high),
+    fill = pal["mist"],
+    alpha = 0.55
+  ) +
   geom_line(linewidth = 1.2, color = pal["teal"]) +
   geom_point(size = 1.8, color = pal["gold"]) +
   scale_x_continuous(breaks = seq(0, 23, 2)) +
   scale_y_continuous(labels = comma) +
   labs(
-    title = "Usage peaks cluster in daytime and early evening.",
-    subtitle = "Average steps by hour of day",
+    title = "Daytime and evening activity peaks remain uncertain.",
+    subtitle = "Participant weighted means with 95% participant bootstrap intervals",
     x = "Hour of day", y = "Average steps",
     caption = caption_txt
   ) +
@@ -131,14 +138,23 @@ p4 <- ggplot(hourly, aes(hour_of_day, avg_steps)) +
 
 save_fig(p4, "04_hourly_steps.png")
 
-p5 <- ggplot(sleep_steps, aes(step_bucket, avg_sleep_hours, fill = step_bucket)) +
-  geom_col(width = 0.7, show.legend = FALSE) +
-  geom_text(aes(label = round(avg_sleep_hours, 1)), vjust = -0.4, size = 4) +
-  scale_fill_manual(values = unname(c(pal["mist"], pal["gold"], pal["coral"], pal["teal"]))) +
+p5 <- ggplot(
+  sleep_association,
+  aes(x = estimate_hours_per_1000_steps, y = reorder(estimand, estimate_hours_per_1000_steps))
+) +
+  geom_vline(xintercept = 0, color = pal["mist"], linewidth = 1) +
+  geom_errorbar(
+    aes(xmin = ci_low, xmax = ci_high),
+    orientation = "y",
+    width = 0.16,
+    color = pal["slate"]
+  ) +
+  geom_point(size = 3.2, color = pal["coral"]) +
+  scale_x_continuous(labels = label_number(accuracy = 0.01)) +
   labs(
-    title = "More movement does not automatically translate into more sleep.",
-    subtitle = "Average sleep hours are lowest on 10k+ step days among users who logged sleep.",
-    x = NULL, y = "Average sleep hours",
+    title = "The activity and sleep relationship is uncertain.",
+    subtitle = "Estimated sleep hours per 1,000 additional steps with 95% intervals",
+    x = "Change in sleep hours", y = NULL,
     caption = caption_txt
   ) +
   theme_bellabeat()
@@ -159,4 +175,34 @@ p6 <- ggplot(activity_mix, aes(activity_type, avg_minutes, fill = activity_type)
 
 save_fig(p6, "06_activity_mix.png")
 
-message("Saved ", length(list.files(fig_dir)), " figures to output/figures/")
+p7_data <- participant_metrics |>
+  filter(metric %in% c("Average daily steps", "Average sedentary hours")) |>
+  mutate(
+    display_metric = recode(
+      metric,
+      "Average daily steps" = "Daily steps",
+      "Average sedentary hours" = "Sedentary hours"
+    )
+  )
+
+p7 <- ggplot(p7_data, aes(estimate, 1)) +
+  geom_errorbar(
+    aes(xmin = ci_low, xmax = ci_high),
+    orientation = "y",
+    width = 0.18,
+    color = pal["slate"]
+  ) +
+  geom_point(size = 3.2, color = pal["teal"]) +
+  facet_wrap(~display_metric, scales = "free_x", ncol = 1) +
+  scale_y_continuous(breaks = NULL) +
+  labs(
+    title = "Participant weighted behavior estimates remain imprecise.",
+    subtitle = "Means and 95% participant bootstrap intervals",
+    x = "Estimate", y = NULL,
+    caption = caption_txt
+  ) +
+  theme_bellabeat()
+
+save_fig(p7, "07_participant_uncertainty.png")
+
+message("Saved seven figures to output/figures/")

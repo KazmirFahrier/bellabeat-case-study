@@ -1,0 +1,17 @@
+Package: bellabeatcasestudy
+Type: Project
+Title: Participant Aware Bellabeat Usage Study
+Version: 2.0.0
+Authors@R: person("Kazmir", "Fahrier", role = c("aut", "cre"), email = "109127042+KazmirFahrier@users.noreply.github.com")
+Description: Reproducible analysis of the public Fitabase activity data with
+    participant weighted summaries, cluster bootstrap uncertainty, sensitivity
+    analysis, and product experiment recommendations.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Imports:
+    digest,
+    here,
+    janitor,
+    lubridate,
+    scales,
+    tidyverse
