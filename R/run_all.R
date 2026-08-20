@@ -10,8 +10,8 @@ source(here("R", "01_download_data.R"))
 python_candidates <- c(
   Sys.getenv("BELLABEAT_PYTHON", unset = ""),
   here(".venv", "bin", "python"),
-  Sys.which("python3"),
-  Sys.which("python")
+  Sys.which("python"),
+  Sys.which("python3")
 )
 python_candidates <- python_candidates[nzchar(python_candidates) & file.exists(python_candidates)]
 if (length(python_candidates) == 0) {
