@@ -1,8 +1,8 @@
-# Bellabeat Smart Device Usage: Participant Aware Case Study
+# Bellabeat Usage Intelligence: Participant Aware Evidence Report
 
 **Author:** Kazmir Fahrier<br>
-**Project type:** Independent portfolio case study<br>
-**Tools:** R, tidyverse, ggplot2, participant bootstrap, fixed effects<br>
+**Project type:** Portfolio product analytics project<br>
+**Tools:** DuckDB SQL, R, tidyverse, ggplot2, Power BI, participant bootstrap, fixed effects<br>
 **Study period:** April 12 through May 12, 2016
 
 ## Executive summary
@@ -10,7 +10,8 @@
 This study evaluates public Fitbit usage data as a source of product hypotheses for a wellness
 technology company. It deliberately avoids treating repeated daily records as independent users.
 The principal results are participant weighted summaries, participant bootstrap intervals, and a
-within participant activity and sleep analysis.
+within participant activity and sleep analysis. DuckDB provides the typed analytical layer and
+executable quality gates. Power BI ready tables provide a separate decision reporting layer.
 
 The dataset supports descriptions of this sample, not claims about Bellabeat customers. The
 participant weighted average is 7,556 daily steps with a 95% participant bootstrap interval from

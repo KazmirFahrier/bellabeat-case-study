@@ -1,0 +1,4 @@
+estimand,estimate_hours_per_1000_steps,ci_low,ci_high,participants,observations,method
+Naive day level association,-0.084911,-0.128804,-0.041018,18,394,Ordinary least squares; repeated days treated as independent
+Within participant association,-0.057915,-0.127428,0.015384,18,394,Participant fixed effects with participant cluster bootstrap
+Between participant association,-0.075615,-0.346158,0.194928,18,18,Regression of participant level means

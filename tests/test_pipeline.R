@@ -12,7 +12,11 @@ required_outputs <- c(
   "summary_sleep_association.csv",
   "summary_estimand_sensitivity.csv",
   "summary_missingness.csv",
-  "product_experiments.csv"
+  "product_experiments.csv",
+  "sql_quality_checks.csv",
+  "sql_participant_kpis.csv",
+  "sql_weekday_usage.csv",
+  "sql_hourly_usage.csv"
 )
 stopifnot(all(file.exists(file.path("data", "processed", required_outputs))))
 
@@ -63,4 +67,12 @@ figures <- list.files(file.path("output", "figures"), pattern = "[.]png$", full.
 stopifnot(length(figures) == 7)
 stopifnot(all(file.info(figures)$size > 20000))
 
-message("All pipeline and scientific checks passed.")
+artifact_status <- system2(
+  python_executable,
+  file.path("tests", "test_artifacts.py"),
+  stdout = "",
+  stderr = ""
+)
+stopifnot(identical(artifact_status, 0L))
+
+message("All pipeline, scientific, and reporting checks passed.")

@@ -1,102 +1,104 @@
-# Bellabeat Usage Study: Participant Aware Behavioral Analysis
+# Bellabeat Usage Intelligence
 
-This project asks a more careful question than the standard Bellabeat capstone:
+[![CI](https://github.com/KazmirFahrier/bellabeat-case-study/actions/workflows/ci.yml/badge.svg)](https://github.com/KazmirFahrier/bellabeat-case-study/actions/workflows/ci.yml)
+![R](https://img.shields.io/badge/R-analysis-276DC3)
+![SQL](https://img.shields.io/badge/SQL-DuckDB-0F766E)
+![Power BI](https://img.shields.io/badge/Power%20BI-dashboard-F2C811)
 
-> Which smart device usage patterns remain credible when participants, rather than repeated daily
-> records, are treated as the unit of evidence?
+An evidence led product analytics project that turns public wearable data into reproducible usage insights, visible quality controls, and testable product recommendations.
 
-The answer changes the story. Descriptive routines are visible, but the sample is too small for
-precise population claims. A naive day level model suggests that higher step days are associated
-with less sleep. After controlling for each participant's baseline and resampling participants,
-that relationship is no longer distinguishable from zero.
+![Bellabeat dashboard preview](powerbi/dashboard-preview.png)
 
-## Key results
+## Headline findings
 
-| Result | Estimate | 95% participant interval |
-| --- | ---: | ---: |
-| Participant weighted daily steps | 7,556 | 6,413 to 8,718 |
-| Participant weighted sedentary hours | 16.63 | 15.38 to 17.86 |
-| Participant weighted share of 10k step days | 31.1% | 21.1% to 42.0% |
-| Within participant sleep change per 1,000 steps | minus 0.058 hours | minus 0.127 to 0.015 |
+| Finding | Decision value |
+|---|---|
+| Participant weighted daily steps are **7,556**, with a 95% interval from **6,413 to 8,718** | Establishes an honest sample baseline without letting frequent loggers dominate |
+| Activity peaks on **Saturday** and near **18:00** | Identifies candidate timing windows for randomized prompt tests |
+| The within participant sleep estimate is **inconclusive** because its interval includes zero | Prevents a misleading causal claim from the naive day level model |
 
-The sleep interval includes zero. This study therefore does not claim that more activity reduces
-sleep. It shows why repeated days cannot be treated as hundreds of independent people.
+The analysis describes a small historical convenience sample. It does not claim to represent Bellabeat customers or prove that product interventions will change behavior.
 
-![Participant uncertainty](output/figures/07_participant_uncertainty.png)
+## Review the work
 
-## What makes this analysis different
+| Deliverable | Purpose |
+|---|---|
+| [Interactive dashboard prototype](powerbi/dashboard.html) | Three report pages for executive results, usage patterns, and evidence |
+| [Power BI build package](powerbi/README.md) | Import tables, DAX measures, theme, Power Query pattern, and page specification |
+| [Executive brief](docs/EXECUTIVE_BRIEF.pdf) | One page decision summary |
+| [SQL analysis](sql/00_schema.sql) | Entry point for the DuckDB warehouse and conformed dimensions |
+| [Full report](docs/REPORT.md) | Methods, findings, evidence grades, and experiment roadmap |
+| [Data model](docs/DATA_MODEL.md) | Grain, keys, relationships, and analytical layers |
+| [Data dictionary](docs/DATA_DICTIONARY.md) | Field definitions, types, null rules, and reporting outputs |
+| [Data card](docs/DATA_CARD.md) | Provenance, scope, and responsible use |
 
-1. The source archive is pinned to an immutable Git commit and verified with SHA 256 checks.
-2. Daily and hourly summaries give each participant equal weight.
-3. Uncertainty intervals resample participants instead of individual days.
-4. The activity and sleep analysis separates day level, within participant, and between
-   participant associations.
-5. Observation weighted and participant weighted estimates are compared as a sensitivity test.
-6. Recommendations are expressed as experiments with a primary metric and a guardrail.
-7. CI runs the complete download, integrity, cleaning, analysis, visualization, and scientific
-   validation workflow.
+## Analytical architecture
 
-## Evidence, not causal claims
-
-The data supports three directional observations:
-
-1. Activity data covers 33 participants, while sleep covers 24 and weight covers only 8.
-2. Participant weighted activity is highest around 6 PM and on Saturday, but intervals are wide.
-3. Within participant evidence does not establish a reliable activity and sleep relationship.
-
-These patterns motivate product experiments. They do not establish that a notification, feature,
-or marketing message will change behavior.
-
-![Activity and sleep estimates](output/figures/05_sleep_by_steps.png)
-
-## Reproduce the study
-
-Requirements are R 4.2 or newer, internet access, and the packages declared in `DESCRIPTION`.
-
-```r
-install.packages(c("digest", "here", "janitor", "lubridate", "scales", "tidyverse"))
-source("R/run_all.R")
+```mermaid
+flowchart LR
+    A[Verified Fitabase CSV files] --> B[DuckDB SQL warehouse]
+    B --> C[Executable quality gates]
+    B --> D[R participant aware inference]
+    C --> E[Power BI import model]
+    D --> E
+    D --> F[Research report and figures]
+    E --> G[Three page dashboard]
 ```
 
-Run the complete pipeline and its scientific assertions with:
+DuckDB owns ingestion, typing, duplicate handling, joins, business rules, quality checks, and reusable reporting views. R owns participant weighted inference, clustered uncertainty, sensitivity analysis, and figures. Power BI receives compact aggregate tables and documented measures.
+
+## Why the statistical design matters
+
+Daily records are repeated measurements, not independent people. The default estimates first summarize each participant, then average those profiles. Confidence intervals resample participants. The sleep analysis separately estimates naive day level, within participant, and between participant associations.
+
+This design changes the conclusion. The naive model reports a precise negative activity and sleep association. After controlling for participant baselines and resampling participants, the interval crosses zero.
+
+## Reproduce everything
+
+Requirements are R 4.2 or newer, Python 3.11 or newer, and internet access for the first source download.
 
 ```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
 Rscript tests/test_pipeline.R
 ```
 
-The first run downloads about 25 MB, verifies the archive and selected CSV files, and keeps the
-raw source data outside Git. Later runs verify the cached files before using them.
+The workflow performs the following work:
+
+1. Downloads a source pinned to an immutable Git commit.
+2. Verifies the archive and selected CSV files with SHA 256 digests.
+3. Builds the local DuckDB warehouse and enforces all SQL quality checks.
+4. Runs descriptive analysis, participant inference, bootstrap intervals, and sensitivity checks in R.
+5. Exports Power BI tables, rebuilds the dashboard prototype, and creates the executive brief.
+6. Runs scientific assertions for source counts, estimates, uncertainty, and deliverables.
+
+Raw source files and the local DuckDB database remain outside Git. Reviewable aggregate outputs are committed.
 
 ## Repository map
 
 ```text
-R/00_utils.R                    Validation and participant bootstrap helpers
-R/01_download_data.R            Pinned download, archive check, and file checks
-R/02_clean_and_merge.R          Typed cleaning, key validation, and quality audit
-R/03_analyze.R                  Descriptive summaries
-R/04_inference.R                Participant inference and sensitivity analysis
-R/04_visualize.R                Seven report figures
-R/run_all.R                     Complete pipeline entry point
-data/RAW_DATA_MANIFEST.csv      Immutable source and SHA 256 provenance
-data/processed/                 Generated reviewable result tables
-docs/REPORT.md                  Full case study
-docs/DATA_CARD.md               Data provenance, scope, and responsible use
-tests/test_pipeline.R           End to end scientific assertions
-.github/workflows/ci.yml        Reproduction on GitHub Actions
+sql/                              DuckDB schema, facts, checks, KPIs, and dashboard views
+R/                                Analysis, inference, figures, and reporting exports
+powerbi/data/                     Generated model ready aggregate tables
+powerbi/measures.dax              Reusable report measures
+powerbi/theme.json                Accessible report theme
+powerbi/DASHBOARD_SPEC.md         Three page report specification
+scripts/run_sql.py                Warehouse build and quality gate runner
+scripts/build_dashboard.py        Portable dashboard prototype generator
+scripts/generate_executive_brief.py  One page PDF generator
+docs/                             Report, brief, data model, dictionary, and data card
+tests/test_pipeline.R             Complete reproduction and scientific checks
+.github/workflows/ci.yml          Automated Linux reproduction
 ```
 
-## Scope and limitations
+## Power BI note
 
-The dataset contains 936 daily records from 33 device users over April 12 through May 12, 2016.
-Only 18 participants have at least five matched sleep days for the primary within participant
-analysis. Demographics, recruitment details, device adherence, and Bellabeat customer behavior are
-not available. Results are exploratory, historical, and not representative of current customers.
+The repository provides a complete Power BI Desktop import package but does not claim that an untested `.pbix` binary was produced in this environment. Build instructions are in [powerbi/README.md](powerbi/README.md). The browser prototype uses the same generated data and mirrors the intended three page report.
 
-The full reasoning, evidence grades, and experiment roadmap are in
-[`docs/REPORT.md`](docs/REPORT.md). Source details are in
-[`docs/DATA_CARD.md`](docs/DATA_CARD.md).
+## Scope
+
+The verified analytical sample contains 936 valid daily records from 33 participants between April 12 and May 12, 2016. Sleep covers 24 participants, weight covers 8, and the primary within participant sleep analysis uses 18 participants with at least five matched days. Demographics, recruitment details, device adherence, and current customer behavior are unavailable.
 
 ## License
 
-Project code and authored documentation are MIT licensed. The external Fitabase data is not
-redistributed here and remains subject to its source terms.
+Project code and authored documentation are MIT licensed. External Fitabase data is not redistributed here and remains subject to its source terms.

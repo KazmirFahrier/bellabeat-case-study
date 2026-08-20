@@ -13,11 +13,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        id: setup-python
+        with:
+          python-version: "3.12"
+          cache: pip
       - uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
       - uses: r-lib/actions/setup-r-dependencies@v2
+      - name: Install SQL and document dependencies
+        run: |
+          ${{ steps.setup-python.outputs.python-path }} -m venv .venv
+          .venv/bin/python -m pip install -r requirements.txt
+          .venv/bin/python -c "import duckdb, reportlab; print('Python dependencies ready')"
       - name: Parse R sources
         run: Rscript -e 'invisible(lapply(list.files("R", pattern = "[.]R$", full.names = TRUE), parse))'
       - name: Run pipeline and scientific checks
         run: Rscript tests/test_pipeline.R
+        env:
+          BELLABEAT_PYTHON: ${{ github.workspace }}/.venv/bin/python
