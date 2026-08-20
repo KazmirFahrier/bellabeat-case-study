@@ -1,0 +1,41 @@
+Participant Count =
+DISTINCTCOUNT ( participant_summary[participant_id] )
+
+Participant Weighted Daily Steps =
+AVERAGE ( participant_summary[avg_steps] )
+
+Participant Weighted Active Minutes =
+AVERAGE ( participant_summary[avg_active_minutes] )
+
+Participant Weighted Sedentary Hours =
+AVERAGE ( participant_summary[avg_sedentary_hours] )
+
+10K Step Day Share =
+AVERAGE ( participant_summary[step_goal_rate] )
+
+Sleep Log Share =
+AVERAGE ( participant_summary[sleep_log_rate] )
+
+Weight Log Share =
+AVERAGE ( participant_summary[weight_log_rate] )
+
+Quality Checks Passed =
+COUNTROWS ( FILTER ( data_quality, data_quality[passed] = TRUE () ) )
+
+Quality Checks Total =
+COUNTROWS ( data_quality )
+
+Quality Gate Status =
+IF ( [Quality Checks Passed] = [Quality Checks Total], "PASS", "REVIEW" )
+
+Peak Weekday =
+VAR PeakRow =
+    TOPN ( 1, weekday_activity, weekday_activity[participant_weighted_steps], DESC )
+RETURN
+    CONCATENATEX ( PeakRow, weekday_activity[day_name], "" )
+
+Peak Hour =
+VAR PeakRow =
+    TOPN ( 1, hourly_activity, hourly_activity[participant_weighted_steps], DESC )
+RETURN
+    FORMAT ( MAXX ( PeakRow, hourly_activity[hour_of_day] ), "00" ) & ":00"

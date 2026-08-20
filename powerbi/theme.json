@@ -1,0 +1,22 @@
+{
+  "name": "Bellabeat Evidence",
+  "dataColors": ["#0F766E", "#F97360", "#EAB308", "#2563EB", "#64748B", "#14B8A6"],
+  "background": "#F8FAFC",
+  "foreground": "#0F172A",
+  "tableAccent": "#0F766E",
+  "good": "#15803D",
+  "neutral": "#EAB308",
+  "bad": "#B91C1C",
+  "maximum": "#0F766E",
+  "center": "#E2E8F0",
+  "minimum": "#F97360",
+  "visualStyles": {
+    "*": {
+      "*": {
+        "title": [{"fontFamily": "Aptos Display", "fontSize": 13, "color": {"solid": {"color": "#0F172A"}}}],
+        "labels": [{"fontFamily": "Aptos", "color": {"solid": {"color": "#334155"}}}],
+        "background": [{"show": true, "color": {"solid": {"color": "#FFFFFF"}}, "transparency": 0}]
+      }
+    }
+  }
+}

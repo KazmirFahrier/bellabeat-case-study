@@ -17,3 +17,10 @@ Thumbs.db
 # Editor
 .vscode/
 .idea/
+.venv/
+.artifacts/
+__pycache__/
+*.pyc
+
+# Local analytical warehouse
+data/warehouse/

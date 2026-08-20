@@ -1,0 +1,13 @@
+check_name,actual_value,expected_value,passed,business_rule
+daily_duplicate_keys,0,0,TRUE,One row per participant and activity date
+daily_participants,33,33,TRUE,Verified source participant count
+daily_source_rows,940,940,TRUE,Source snapshot row count
+daily_valid_rows,936,936,TRUE,Exclude zero calorie placeholder days
+hourly_join_rows,22099,22099,TRUE,Hourly joins must preserve the verified row count
+hourly_null_keys,0,0,TRUE,Hourly participant and timestamp keys cannot be null
+sleep_duplicate_rows,3,3,TRUE,Duplicate participant days are consolidated
+sleep_participants,24,24,TRUE,Verified source participant count
+sleep_source_rows,413,413,TRUE,Source snapshot row count
+sleep_user_days,410,410,TRUE,One row per participant and sleep date
+weight_participants,8,8,TRUE,Sparse weight coverage is retained as a limitation
+weight_user_days,67,67,TRUE,Verified weight record count after daily consolidation
